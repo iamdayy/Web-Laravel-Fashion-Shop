@@ -24,7 +24,7 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'address' => fake()->address(),
             'email_verified_at' => now(),
-            'password' => 'user', // password
+            'password' => bcrypt('password'), // password
             'remember_token' => Str::random(10),
             'role' => $this->faker->randomElement(['customer', 'admin']),
         ];
@@ -37,7 +37,7 @@ class UserFactory extends Factory
      */
     public function unverified()
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }

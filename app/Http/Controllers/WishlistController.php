@@ -10,18 +10,18 @@ use Illuminate\Support\Facades\DB;
 
 class WishlistController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         $wishlists = Wishlist::with(['Item', 'User'])
-        ->where('user_id', Auth::user()->id)
-        ->get();
-        // var_dump();
-        // exit;
+            ->where('user_id', Auth::user()->id)
+            ->get();
         return view('user.wishlist.index', [
             'wishlists' => $wishlists,
             'countPendingOrders' => OrderController::pendingOrders(),
         ]);
     }
-    public function addToWishlist(Request $request) {
+    public function addToWishlist(Request $request)
+    {
         DB::table('wishlists')->insert([
             'id' => $request->id,
             'user_id' => Auth::user()->id,
@@ -33,11 +33,11 @@ class WishlistController extends Controller
         return redirect("/products/show/$request->item_id");
     }
     public function delete(string $id)
-	{
-		$item = DB::table('wishlist')->where('id', $id);
+    {
+        $item = DB::table('wishlist')->where('id', $id);
         $item->delete();
-		return redirect('/wishlist');
-	}
+        return redirect('/wishlist');
+    }
 
     public function destroy($id)
     {

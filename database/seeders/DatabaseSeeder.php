@@ -14,13 +14,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        
-        // \App\Models\User::factory()->create([
-            //     'name' => 'Test User',
-            //     'email' => 'test@example.com',
-            // ]);
+
+        \App\Models\User::factory()->create([
+            'name' => 'admin',
+            'email' => 'admin@admin.com',
+            'username' => 'admin',
+            'photo' => '/storage/images/person-dummy.jpg',
+            'address' => 'Admin Address',
+            'password' => bcrypt('admin'), // password
+            'role' => 'admin',
+            'email_verified_at' => now(),
+        ]);
         \App\Models\User::factory(75)->create();
-        $this->call([ItemSeeder::class, BannerSeeder::class]);
-        \App\Models\Order::factory(150)->create();
+        $this->call([ItemSeeder::class, BannerSeeder::class, OrderSeeder::class]);
     }
 }

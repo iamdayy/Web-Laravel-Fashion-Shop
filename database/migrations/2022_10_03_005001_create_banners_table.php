@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('banners', function (Blueprint $table) {
             $table->id();
             $table->string('image_url');
-            $table->string('redirect_url');
+            $table->string('redirect_url')->nullable();
             $table->timestamps();
         });
     }

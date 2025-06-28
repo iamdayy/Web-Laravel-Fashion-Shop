@@ -15,12 +15,10 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
-            $table->string('order_id');
             $table->string('photo_url');
             $table->string('review');
             $table->float('rating');
             $table->timestamps();
-            $table->foreign('order_id')->references('id')->on('orders');
         });
     }
 

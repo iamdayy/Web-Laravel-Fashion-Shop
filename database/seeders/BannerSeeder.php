@@ -18,12 +18,12 @@ class BannerSeeder extends Seeder
         $items = [
             [
                 'id' => '1',
-                'imageUrl' => 'storage/images/bg-1.jpg'
-                
+                'image_url' => 'storage/images/bg-1.jpg'
+
             ],
             [
                 'id' => '2',
-                'imageUrl' => 'storage/images/bg-3.jpg'
+                'image_url' => 'storage/images/bg-3.jpg'
 
             ],
         ];

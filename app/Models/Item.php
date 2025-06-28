@@ -7,10 +7,32 @@ use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
 {
-    public function Order() {
-        return $this->hasMany(Order::class);
+    public function  orders()
+    {
+        return $this->belongsToMany(Order::class, 'items_orders', 'item_id', 'order_id')
+            ->withPivot('quantity', 'review_id')
+            ->withTimestamps();
     }
-    public function Cart() {
+    public function reviews()
+    {
+        return $this->Orders()
+            ->join('reviews', 'items_orders.review_id', '=', 'reviews.id')
+            ->select('reviews.*');
+    }
+    public function sold()
+    {
+        return  $this->Orders()
+            ->selectRaw('SUM(items_orders.quantity) as total_sold')
+            ->groupBy('item_id');
+    }
+    public function rating()
+    {
+        return $this->Reviews()
+            ->selectRaw('AVG(reviews.rating) as average_rating')
+            ->groupBy('item_id');
+    }
+    public function Cart()
+    {
         return $this->hasMany(Cart::class);
     }
     use HasFactory;
@@ -19,6 +41,13 @@ class Item extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'photo', 'name', 'description', 'rating', 'stock', 'price', 'sold', 'created_at', 'updated_at',
+        'photo',
+        'name',
+        'description',
+        'stock',
+        'price',
+        'category',
+        'created_at',
+        'updated_at',
     ];
 }

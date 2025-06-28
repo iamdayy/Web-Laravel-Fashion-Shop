@@ -14,6 +14,13 @@ class OrderSeeder extends Seeder
      */
     public function run()
     {
-        //
+        \App\Models\Order::factory(50)->create()->each(function ($order) {
+            $items = \App\Models\Item::inRandomOrder()->take(rand(1, 5))->get();
+            foreach ($items as $item) {
+                $order->items()->attach($item->id, [
+                    'quantity' => rand(1, 3),
+                ]);
+            }
+        });
     }
 }

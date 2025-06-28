@@ -195,6 +195,13 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
+        /**
+         * Additional Service Providers
+         * Uncomment the following lines to enable additional service providers.
+         */
+
+        Rdj\Rajaongkir\RajaongkirServiceProvider::class,
+
     ],
 
     /*
@@ -210,6 +217,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
+        'Rajaongkir' => Rdj\Rajaongkir\Facades\Rajaongkir::class,
     ])->toArray(),
 
 ];

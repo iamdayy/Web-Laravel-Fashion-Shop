@@ -13,7 +13,7 @@ class ItemController extends Controller
 {
     public function index(string $page)
     {
-        $items = DB::table('items')->paginate(10);
+        $items = Item::with(['rating', 'sold'])->paginate(10, ['*'], 'page', $page);
         // return $items[0]->id;
         // example using API (add BASE_ENV=localhost:8001)
         // $endpoint = env('BASE_ENV') . '/api/admin/products?page=' . $page;
@@ -31,7 +31,8 @@ class ItemController extends Controller
     public function show(string $id)
     {
         $items = DB::table('items')->get();
-        return view('admin.products.show',
+        return view(
+            'admin.products.show',
             [
                 'id' => $id,
                 'items' => $items,
@@ -41,8 +42,9 @@ class ItemController extends Controller
     }
     public function detail(string $id)
     {
-        $item = DB::table('items')->where('id', $id)->first();
-        return view('details',
+        $item = Item::with(['reviews', 'sold', 'rating'])->where('id', $id)->first();
+        return view(
+            'details',
             [
                 'id' => $id,
                 'item' => $item,
@@ -50,15 +52,18 @@ class ItemController extends Controller
         );
     }
 
-    public function create() {
-        return view('admin.products.create', 
-        [
-            'countPendingOrders' => OrderController::pendingOrders(),
-        ]
+    public function create()
+    {
+        return view(
+            'admin.products.create',
+            [
+                'countPendingOrders' => OrderController::pendingOrders(),
+            ]
         );
     }
-    
-    public function store(Request $request) {
+
+    public function store(Request $request)
+    {
         $date = Carbon::now()->format('Ymd_His');
         $image = $request->photo;
         $extension = $image->getClientOriginalExtension();
@@ -86,7 +91,7 @@ class ItemController extends Controller
 
     // delete products
     public function delete(string $id)
-	{
+    {
         $item = DB::table('items')->where('id', $id);
         // $filename =  substr($item->first()->photo, 1);
         // echo base_path($filename);
@@ -94,11 +99,12 @@ class ItemController extends Controller
         // delete photo
         // Storage::delete(base_path('app/public' . $filename));
         $item->delete();
-		return redirect('/admin/products/page/1');
-	}
+        return redirect('/admin/products/page/1');
+    }
 
     // edit products
-    public function edit(string $id) {
+    public function edit(string $id)
+    {
         $item = DB::table('items')->where('id', $id)->first();
 
         return view('admin.products.update', [
@@ -108,14 +114,15 @@ class ItemController extends Controller
     }
 
     // update products
-    public function update(Request $request) {
+    public function update(Request $request)
+    {
         $oldImage = $request->photo;
         $newImage = $request->newPhoto;
         $imgUrl = $oldImage;
         if ($newImage != NULL) {
-            
+
             $date = Carbon::now()->format('Ymd_His');
-            
+
             $extension = $newImage->getClientOriginalExtension();
             $newName = "IMG_$date.$extension";
             $newImage->storePubliclyAs('images/products', $newName, 'public');
