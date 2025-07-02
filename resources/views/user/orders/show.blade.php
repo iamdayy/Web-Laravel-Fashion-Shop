@@ -1,12 +1,21 @@
 @extends('user.layout')
 @section('content.user')
     <div class="container">
+        @php
+            $grossAmount = 0;
+            foreach ($order->items as $item) {
+                $grossAmount += $item->price * $item->pivot->quantity;
+            }
+        @endphp
         <h1 class="my-4">Order Details</h1>
         <div class="mb-4 card">
             <div class="card-body">
                 <h5 class="card-title">Order ID: {{ $order->id }}</h5>
                 <p class="card-text">Status: {{ $order->status }}</p>
-                <p class="card-text">Total Amount: {{ number_format($order->total_amount, 2) }} IDR</p>
+                <p class="card-text">Total Amount: {{ number_format($grossAmount, 2) }} IDR</p>
+                <p class="card-text">Shipping Cost:
+                    {{ $order->shipping ? number_format($order->shipping->shipping_cost, 2) : '0.00' }}
+                    IDR</p>
                 <p class="card-text">Created At: {{ $order->created_at->format('d M Y H:i') }}</p>
             </div>
         </div>

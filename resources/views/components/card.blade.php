@@ -5,7 +5,7 @@
     <div class="mx-0 mt-3 col-md-2 col-6" aria-hidden="true">
         <div class="shadow-sm card border-1 border-light position-relative" role="button"
             onclick="redirectTo('/products/show/{{ $item->id }}')">
-            <img src="{{ $item->photo }}" height="200px" class="card-img-top placeholder" alt="...">
+            <img src="{{ asset($item->photo) }}" height="200px" class="card-img-top placeholder" alt="...">
             <div class="p-2 card-body placeholder-wave">
                 <p class="card-title placeholder">{{ mb_strimwidth($item->name, 0, 56, '...') }}</p>
                 <div class="">

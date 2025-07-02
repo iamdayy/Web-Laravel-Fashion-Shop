@@ -7,13 +7,13 @@
                 <div class="bg-white swiper mySwiper placeholder-glow">
                     <div class="swiper-wrapper" role="button">
                         <div class="m-auto swiper-slide">
-                            <img class="w-100 h-100" src="{{ $item->photo }}" alt="Image">
+                            <img class="w-100 h-100" src="{{ asset($item->photo) }}" alt="Image">
                         </div>
                         <div class="m-auto swiper-slide">
-                            <img class="w-100 h-100" src="{{ $item->photo }}" alt="Image">
+                            <img class="w-100 h-100" src="{{ asset($item->photo) }}" alt="Image">
                         </div>
                         <div class="m-auto swiper-slide">
-                            <img class="w-100 h-100" src="{{ $item->photo }}" alt="Image">
+                            <img class="w-100 h-100" src="{{ asset($item->photo) }}" alt="Image">
                         </div>
                     </div>
                     <div class="swiper-button-next"></div>
@@ -26,107 +26,63 @@
                     <h3>{{ $item->name }}</h3>
                     <div class="mb-3 d-flex">
                         <div class="mr-2 text-warning">
-                            <small class="fas fa-star"></small>
-                            <small class="fas fa-star"></small>
-                            <small class="fas fa-star"></small>
-                            <small class="fas fa-star-half-alt"></small>
-                            <small class="far fa-star"></small>
+                            @if (count($item->rating) > 1)
+                                @foreach ($item->rating[0]->average_rating as $i)
+                                    <i class="bi bi-star-fill"></i>
+                                @endforeach
+                            @else
+                                <i class="bi bi-star-fill"></i>
+                            @endif
                         </div>
                         <small class="pt-1 ms-1">({{ count($item->reviews) }}) Reviews</small>
                     </div>
                     <h3 class="mb-4 font-weight-semi-bold">Rp{{ number_format($item->price, 2, ',', '.') }}</h3>
                     <p class="mb-4">{{ $item->description }}</p>
-                    <div class="mb-3 d-flex">
-                        <strong class="text-dark me-3">Sizes:</strong>
-                        <form>
-                            <div class="custom-control custom-radio d-inline">
-                                <input type="radio" class="me-1 custom-control-input" id="size-1" name="size">
-                                <label class="custom-control-label" for="size-1">XS</label>
-                            </div>
-                            <div class="custom-control custom-radio d-inline">
-                                <input type="radio" class="me-1 custom-control-input" id="size-2" name="size">
-                                <label class="custom-control-label" for="size-2">S</label>
-                            </div>
-                            <div class="custom-control custom-radio d-inline">
-                                <input type="radio" class="me-1 custom-control-input" id="size-3" name="size">
-                                <label class="custom-control-label" for="size-3">M</label>
-                            </div>
-                            <div class="custom-control custom-radio d-inline">
-                                <input type="radio" class="me-1 custom-control-input" id="size-4" name="size">
-                                <label class="custom-control-label" for="size-4">L</label>
-                            </div>
-                            <div class="custom-control custom-radio d-inline">
-                                <input type="radio" class="me-1 custom-control-input" id="size-5" name="size">
-                                <label class="custom-control-label" for="size-5">XL</label>
-                            </div>
-                        </form>
+                    <div class="mb-4 d-flex align-items-center">
+                        <strong class="mr-2 text-dark">Category:</strong>
+                        <span class="text-secondary">{{ $item->category }}</span>
                     </div>
-                    <div class="mb-4 d-flex">
-                        <strong class="text-dark me-3">Colors:</strong>
-                        <form>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input me-1" id="color-1" name="color">
-                                <label class="custom-control-label" for="color-1">Black</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input me-1" id="color-2" name="color">
-                                <label class="custom-control-label" for="color-2">White</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input me-1" id="color-3" name="color">
-                                <label class="custom-control-label" for="color-3">Red</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input me-1" id="color-4" name="color">
-                                <label class="custom-control-label" for="color-4">Blue</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" class="custom-control-input me-1" id="color-5" name="color">
-                                <label class="custom-control-label" for="color-5">Green</label>
-                            </div>
-                        </form>
-                    </div>
-                    {{-- @if (Auth::check()) --}}
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col">
-                                <form class="" action="/carts/add" method="POST" onsubmit="cartAlert()">
-                                    {{ csrf_field() }}
-                                    <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
-                                    <input type="hidden" name="item_id" value="{{ $item->id }}">
-                                    <div class="pt-2 mb-4 d-flex align-items-center">
-                                        <div class="mr-3 input-group quantity" style="width: 130px;">
-                                            <div class="input-group-btn">
-                                                <button class="btn btn-warning rounded-0 btn-minus">
-                                                    <i class="fa fa-minus"></i>
-                                                </button>
+                    @if (Auth::check())
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col">
+                                    <form class="" action="/carts/add" method="POST" onsubmit="cartAlert()">
+                                        {{ csrf_field() }}
+                                        <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
+                                        <input type="hidden" name="item_id" value="{{ $item->id }}">
+                                        <div class="pt-2 mb-4 d-flex align-items-center">
+                                            <div class="mr-3 input-group quantity" style="width: 130px;">
+                                                <div class="input-group-btn">
+                                                    <button class="btn btn-warning rounded-0 btn-minus">
+                                                        <i class="fa fa-minus"></i>
+                                                    </button>
+                                                </div>
+                                                <input type="text" class="text-center border-0 form-control bg-light"
+                                                    name="quantity" value="1">
+                                                <div class="input-group-btn">
+                                                    <button class="btn btn-warning rounded-0 btn-plus">
+                                                        <i class="fa fa-plus"></i>
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <input type="text" class="text-center border-0 form-control bg-light"
-                                                name="quantity" value="1">
-                                            <div class="input-group-btn">
-                                                <button class="btn btn-warning rounded-0 btn-plus">
-                                                    <i class="fa fa-plus"></i>
-                                                </button>
-                                            </div>
+                                            <button type="submit" class="px-3 btn btn-warning ms-3 rounded-0"><i
+                                                    class="mr-1 fa fa-shopping-cart"></i> Add To Cart</button>
                                         </div>
-                                        <button type="submit" class="px-3 btn btn-warning ms-3 rounded-0"><i
-                                                class="mr-1 fa fa-shopping-cart"></i> Add To Cart</button>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="col">
-                                <form class="pt-2" action="/wishlists/add" method="POST" onsubmit="cartAlert()">
-                                    {{ csrf_field() }}
-                                    <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
-                                    <input type="hidden" name="item_id" value="{{ $item->id }}">
+                                    </form>
+                                </div>
+                                <div class="col">
+                                    <form class="pt-2" action="/wishlists/add" method="POST" onsubmit="cartAlert()">
+                                        {{ csrf_field() }}
+                                        <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
+                                        <input type="hidden" name="item_id" value="{{ $item->id }}">
 
-                                    <button type="submit" class="px-3 btn btn-warning ms-3 rounded-0"><i
-                                            class="mr-1 fa fa-heart"> Add To Wishlist</i></button>
-                                </form>
+                                        <button type="submit" class="px-3 btn btn-warning ms-3 rounded-0"><i
+                                                class="mr-1 fa fa-heart"> Add To Wishlist</i></button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {{-- @endif --}}
+                    @endif
 
 
                     <div class="pt-2 d-flex">
@@ -157,9 +113,6 @@
                             <button class="nav-link text-dark active" id="nav-home-tab" data-bs-toggle="tab"
                                 data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home"
                                 aria-selected="true">Description</button>
-                            <button class="nav-link text-dark" id="nav-profile-tab" data-bs-toggle="tab"
-                                data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile"
-                                aria-selected="false">Information</button>
                             <button class="nav-link text-dark" id="nav-contact-tab" data-bs-toggle="tab"
                                 data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact"
                                 aria-selected="false">Reviews</button>
@@ -170,51 +123,6 @@
                             aria-labelledby="nav-home-tab" tabindex="0">
                             <h4 class="mb-3">Product Description</h4>
                             <p>{{ $item->description }}</p>
-                        </div>
-                        <div class="px-2 py-4 tab-pane fade" id="nav-profile" role="tabpanel"
-                            aria-labelledby="nav-profile-tab" tabindex="0">
-                            <h4 class="mb-3">Additional Information</h4>
-                            <p>Eos no lorem eirmod diam diam, eos elitr et gubergren diam sea. Consetetur vero aliquyam
-                                invidunt duo dolores et duo sit. Vero diam ea vero et dolore rebum, dolor rebum eirmod
-                                consetetur invidunt sed sed et, lorem duo et eos elitr, sadipscing kasd ipsum rebum diam.
-                                Dolore diam stet rebum sed tempor kasd eirmod. Takimata kasd ipsum accusam sadipscing, eos
-                                dolores sit no ut diam consetetur duo justo est, sit sanctus diam tempor aliquyam eirmod
-                                nonumy rebum dolor accusam, ipsum kasd eos consetetur at sit rebum, diam kasd invidunt
-                                tempor lorem, ipsum lorem elitr sanctus eirmod takimata dolor ea invidunt.</p>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <ul class="list-group list-group-flush">
-                                        <li class="px-0 list-group-item">
-                                            Sit erat duo lorem duo ea consetetur, et eirmod takimata.
-                                        </li>
-                                        <li class="px-0 list-group-item">
-                                            Amet kasd gubergren sit sanctus et lorem eos sadipscing at.
-                                        </li>
-                                        <li class="px-0 list-group-item">
-                                            Duo amet accusam eirmod nonumy stet et et stet eirmod.
-                                        </li>
-                                        <li class="px-0 list-group-item">
-                                            Takimata ea clita labore amet ipsum erat justo voluptua. Nonumy.
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <ul class="list-group list-group-flush">
-                                        <li class="px-0 list-group-item">
-                                            Sit erat duo lorem duo ea consetetur, et eirmod takimata.
-                                        </li>
-                                        <li class="px-0 list-group-item">
-                                            Amet kasd gubergren sit sanctus et lorem eos sadipscing at.
-                                        </li>
-                                        <li class="px-0 list-group-item">
-                                            Duo amet accusam eirmod nonumy stet et et stet eirmod.
-                                        </li>
-                                        <li class="px-0 list-group-item">
-                                            Takimata ea clita labore amet ipsum erat justo voluptua. Nonumy.
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
                         </div>
                         <div class="tab-pane fade py-xl-4 px-xl-2" id="nav-contact" role="tabpanel"
                             aria-labelledby="nav-contact-tab" tabindex="0">
@@ -290,38 +198,38 @@
         <h2 class="text-uppercase fs-5 text-secondary">You May Also Like</h2>
         <hr width="70px">
         <div class="row">
-            @for ($i = 0; $i < 4; $i++)
+            @foreach ($relatedItems as $rItem)
                 <div class="col-lg-3">
                     <div class="bg-white product-item">
                         <div class="overflow-hidden product-img position-relative">
-                            <img class="w-100 h-100" src="{{ $item->photo }}" alt="Image">
+                            <img class="w-100 h-100" src="{{ asset($rItem->photo) }}" alt="Image">
                         </div>
                         <div class="py-4 text-center">
                             <a class="text-black h6 text-decoration-none text-truncate"
-                                href="">{{ mb_strimwidth($item->name, 0, 26, '...') }}</a>
+                                href="/products/show/{{ $rItem->id }}">{{ $rItem->name }}</a>
                             <div class="mt-2 d-flex align-items-center justify-content-center">
-                                <h5>Rp{{ number_format($item->price, 2, ',', '.') }}</h5>
+                                <h5>Rp{{ number_format($rItem->price, 2, ',', '.') }}</h5>
                             </div>
                             <div class="mb-1 d-flex align-items-center justify-content-center">
-                                @if (count($item->rating) > 1)
-                                    @foreach ($item->rating[0]->average_rating as $i)
+                                @if (count($rItem->rating) > 1)
+                                    @foreach ($rItem->rating[0]->average_rating as $i)
                                         <i class="bi bi-star-fill text-warning"></i>
                                     @endforeach
                                 @else
                                     <i class="bi bi-star-fill"></i>
                                 @endif
                                 <small>
-                                    @if (count($item->rating) < 1)
+                                    @if (count($rItem->rating) < 1)
                                         0
                                     @else
-                                        {{ $item->rating[0]->average_rating }}
+                                        {{ $rItem->rating[0]->average_rating }}
                                     @endif
                                 </small>
                             </div>
                         </div>
                     </div>
                 </div>
-            @endfor
+            @endforeach
         </div>
     </div>
     <!-- Products End -->

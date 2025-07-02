@@ -4,6 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Alirezasedghi\LaravelImageFaker\ImageFaker;
+use Alirezasedghi\LaravelImageFaker\Services\Picsum;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -17,8 +19,9 @@ class UserFactory extends Factory
      */
     public function definition()
     {
+        $imageFaker = new ImageFaker(new Picsum());
         return [
-            'photo' => '/storage/images/person-dummy.jpg',
+            'photo' => '/storage/images/users/' . $imageFaker->image(storage_path('app/public/images/users'), 640, 480, false, true, true),
             'username' => fake()->username(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),

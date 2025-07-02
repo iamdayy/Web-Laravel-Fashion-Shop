@@ -25,6 +25,7 @@
                                 <?php $totalPrice += $item->price * $item->pivot->quantity; ?>
                             </div>
                         @endforeach
+                    </td>
                     <td class="py-3">Rp{{ number_format($totalPrice, 2, ',', '.') }}</td>
                     <td class="py-3">{{ $order->created_at }}</td>
                     <td class="py-3">{{ $order->updated_at }}</td>

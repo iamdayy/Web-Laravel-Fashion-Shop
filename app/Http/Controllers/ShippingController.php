@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Shipping;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class ShippingController extends Controller
 {
@@ -57,6 +58,13 @@ class ShippingController extends Controller
     public function createShippingForm($orderId)
     {
         $order = Order::findOrFail($orderId);
+        if (!$order) {
+            return redirect()->back()->withErrors(['error' => 'Order not found.']);
+        }
+        // Check if the order is already shipped
+        if ($order->shipping) {
+            return redirect()->back()->withErrors(['error' => 'Shipping information already exists for this order.']);
+        }
         // Ensure the order belongs to the authenticated user
         if ($order->user_id !== Auth::id()) {
             return redirect()->back()->withErrors(['error' => 'Unauthorized access to this order.']);
@@ -66,10 +74,10 @@ class ShippingController extends Controller
     /**
      * Create a new shipping record for the order.
      */
-    public function createShipping(Request $request, $orderId)
+    public function createShipping(Request $request, $id)
     {
         $shipping = Shipping::create([
-            'order_id' => $orderId,
+            'order_id' => $id,
             'state' => $request->input('state'),
             'city' => $request->input('city'),
             'district' => $request->input('district'),
@@ -83,8 +91,66 @@ class ShippingController extends Controller
             'shipped_at' => null,
             'delivered_at' => null
         ]);
-        return redirect()->route('orders.show', ['id' => $orderId])
+        return redirect()->route('orders.show', ['id' => $id])
             ->with('success', 'Shipping information created successfully.')
             ->with('shipping', $shipping);
+    }
+    /**
+     * Get the destination for shipping.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getDestination(Request $request)
+    {
+        $query = $request->input('query');
+        if (!$query) {
+            return response()->json(['error' => 'Query parameter is required'], 400);
+        }
+        $url = 'https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=' . urlencode($query);
+        $response =  Http::withHeaders([
+            'key' => config('rajaongkir_api.key'),
+            'Content-Type' => 'application/json',
+        ])->get($url);
+        if (!$response->successful()) {
+            return response()->json(['error' => 'Failed to fetch data from RajaOngkir'], $response->status());
+        }
+        $data = $response->json();
+        if (isset($data['data'])) {
+            return response()->json($data['data']);
+        } else {
+            return response()->json(['error' => 'No results found'], 404);
+        }
+    }
+    /**
+     * calculate shipping cost based on the selected destination and courier.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function calculateShippingCost(Request $request)
+    {
+        $request->validate([
+            'destination' => 'required|integer',
+            'weight' => 'required|integer|min:1', // Weight must be a positive integer
+            'courier' => 'required|string|in:jne,pos,tiki', // Valid couriers
+        ]);
+        $url = 'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost';
+        $response = Http::withHeaders([
+            'key' => config('rajaongkir_api.key'),
+            'Content-Type' => 'application/json',
+        ])->asForm()->post($url, [
+            'origin' => env('RAJAONGKIR_ORIGIN'), // Default origin ID, can be set in .env
+            'destination' => $request->input('destination', 65421),
+            'weight' => $request->input('weight'),
+            'courier' => $request->input('courier'),
+        ]);
+        if (!$response->successful()) {
+            return response()->json(['error' => 'Failed to fetch shipping cost'], $response->status());
+        }
+        $data = $response->json();
+        if (isset($data['data']) && is_array($data['data'])) {
+            return response()->json($data['data']);
+        } else {
+            return response()->json(['error' => 'No shipping options found'], 404);
+        }
     }
 }

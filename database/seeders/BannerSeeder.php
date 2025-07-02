@@ -15,21 +15,6 @@ class BannerSeeder extends Seeder
      */
     public function run()
     {
-        $items = [
-            [
-                'id' => '1',
-                'image_url' => 'storage/images/bg-1.jpg'
-
-            ],
-            [
-                'id' => '2',
-                'image_url' => 'storage/images/bg-3.jpg'
-
-            ],
-        ];
-
-        foreach ($items as $item) {
-            Banner::firstOrCreate($item);
-        }
+        Banner::factory()->count(5)->create();
     }
 }

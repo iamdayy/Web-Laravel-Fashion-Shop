@@ -50,6 +50,16 @@ class OrderController extends Controller
         ]);
     }
 
+    public function adminShow($id)
+    {
+        // mengambil data dari table orders
+        $order = Order::with(['items', 'user', 'shipping', 'payment'])->findOrFail($id);
+        return view('admin.orders.show', [
+            'order' => $order,
+            'countPendingOrders' => OrderController::pendingOrders(),
+        ]);
+    }
+
 
     public function changeStatus(string $id, string $status)
     {

@@ -11,9 +11,11 @@ use Illuminate\Support\Facades\Storage;
 
 class ItemController extends Controller
 {
-    public function index(string $page)
+    public function index(Request $request)
     {
-        $items = Item::with(['rating', 'sold'])->paginate(10, ['*'], 'page', $page);
+        $page = $request->query('page', '1');
+
+        $items = Item::with(['rating', 'sold'])->paginate(10, ['*'], 'page', (int)$page);
         // return $items[0]->id;
         // example using API (add BASE_ENV=localhost:8001)
         // $endpoint = env('BASE_ENV') . '/api/admin/products?page=' . $page;
@@ -21,6 +23,7 @@ class ItemController extends Controller
 
         // $response = $client->request('GET', $endpoint);
         // $items = json_decode($response->getBody(), true);
+
 
         return view('admin.products.index', [
             'items' => $items,
@@ -30,7 +33,9 @@ class ItemController extends Controller
 
     public function show(string $id)
     {
-        $items = DB::table('items')->get();
+        $items = Item::with(['rating', 'sold'])
+            ->where('id', $id)
+            ->get();
         return view(
             'admin.products.show',
             [
@@ -43,11 +48,16 @@ class ItemController extends Controller
     public function detail(string $id)
     {
         $item = Item::with(['reviews', 'sold', 'rating'])->where('id', $id)->first();
+        $relatedItems = Item::where('category', $item->category)
+            ->where('id', '!=', $id)
+            ->take(4)
+            ->get();
         return view(
             'details',
             [
                 'id' => $id,
                 'item' => $item,
+                'relatedItems' => $relatedItems,
             ]
         );
     }
@@ -68,38 +78,44 @@ class ItemController extends Controller
         $image = $request->photo;
         $extension = $image->getClientOriginalExtension();
         $newName = "IMG_$date.$extension";
-        $image->storePubliclyAs('images/products', $newName, 'public');
+        $image->storePubliclyAs('images/items', $newName, 'public');
 
         // $image->storePubliclyAs('images/products', $image->getClientOriginalName(), 'public');
-        DB::table('items')->insert([
+        Item::create([
             'id' => $request->id,
             'name' => $request->name,
             'description' => $request->description,
-            'rating' => '0',
             'stock' => $request->stock,
             'price' => $request->price,
-            'sold' => '0',
-            'reviewer' => '0',
-            'photo' => "/storage/images/products/{$newName}",
+            'photo' => "/storage/images/items/{$newName}",
             'category' => $request->category,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        return redirect('/admin/products/page/1');
+        return redirect('/admin/products');
     }
 
     // delete products
     public function delete(string $id)
     {
-        $item = DB::table('items')->where('id', $id);
+        $item = Item::where('id', $id)->first();
+        if (!$item) {
+            return redirect('/admin/products')->with('error', 'Item not found');
+        }
+        // If you want to delete the photo from storage, uncomment the following lines
+        if ($item->photo) {
+            $filename = substr($item->photo, 1); // Remove the leading slash
+            if (Storage::exists('public/' . $filename)) {
+                Storage::delete('public/' . $filename);
+            }
+        }
         // $filename =  substr($item->first()->photo, 1);
         // echo base_path($filename);
         // exit;
         // delete photo
         // Storage::delete(base_path('app/public' . $filename));
         $item->delete();
-        return redirect('/admin/products/page/1');
+        return redirect('/admin/products');
     }
 
     // edit products
@@ -128,16 +144,16 @@ class ItemController extends Controller
             $newImage->storePubliclyAs('images/products', $newName, 'public');
             $imgUrl = "/storage/images/products/{$newName}";
         }
-        DB::table('items')->where('id', $request->id)->update([
+        Item::where('id', $request->id)->update([
             'name' => $request->name,
             'description' => $request->description,
             'stock' => $request->stock,
-            'category' => $request->category,
             'price' => $request->price,
             'photo' => $imgUrl,
+            'category' => $request->category,
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        return redirect('/admin/products/page/1');
+        return redirect('/admin/products');
     }
 }

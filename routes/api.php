@@ -28,9 +28,3 @@ Route::middleware([])->controller(ProductController::class)->prefix('/admin/prod
     // Route::post('/store', 'store');
     // Route::get('/delete/{id}', 'delete');
 });
-
-Route::group(['prefix' => 'rajaongkir'], function () {
-    Route::get('/provincies', [App\Http\Controllers\RajaOngkirController::class, 'getProvinces']);
-    Route::get('/provincies/{provinceId}', [App\Http\Controllers\RajaOngkirController::class, 'getCities']);
-    Route::post('/cost', [App\Http\Controllers\RajaOngkirController::class, 'getCost']);
-});

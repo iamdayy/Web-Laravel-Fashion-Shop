@@ -10,8 +10,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use App\Models\Banner;
 use App\Models\Item;
-use GuzzleHttp\Client;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,26 +29,56 @@ Route::fallback(function () {
 });
 
 Route::get('/', function () {
-    $items = Item::with('rating')->paginate(10);
+    $items = Item::with('rating')
+        ->orderBy('created_at', 'desc')
+        ->take(8)
+        ->get();
+    $categories = Item::select('category')
+        ->distinct()
+        ->get()
+        ->map(function ($item) {
+            $category = $item->category;
+            $photo = Item::where('category', $category)->value('photo');
+            $products_count = Item::where('category', $category)->count();
+            return [
+                'category' => $category,
+                'photo' => $photo,
+                'products_count' => $products_count,
+            ];
+        });
+    $categories = $categories->map(function ($category) {
+        return (object) $category;
+    });
     return view('home', [
         'route' => Request::route()->getName(),
         'title' => 'NIKKY',
         'items' => $items,
         'banners' => Banner::all(),
+        'categories' => $categories,
     ]);
 })->name('home');
 
 Route::get('/products', function () {
+    // Mengambil semua item dari database
+    // dan mengembalikannya ke view 'products'
+    // Jika tidak ada item, redirect ke halaman utama
+    $items = Item::with('rating')->get();
+    if ($items->isEmpty()) {
+        return redirect('/');
+    }
     return view('products', [
-        'items' => DB::table('items')->get(),
+        'items' => $items,
         'param' => ''
     ]);
 });
 Route::get('/products/{params}', function (string $params) {
-    $items = DB::table('items')->where('category', $params)->get();
-    if (!sizeof($items)) {
-        return redirect('/');
-    }
+    $items = Item::with('rating')
+        ->where(function ($query) use ($params) {
+            $query->where('name', 'like', '%' . $params . '%')
+                ->orWhere('description', 'like', '%' . $params . '%')
+                ->orWhere('category', 'like', '%' . $params . '%');
+        })
+        ->get();
     return view('products', [
         'items' => $items,
         'param' => $params,
@@ -85,20 +113,24 @@ Route::middleware(['auth', 'authorization:customer'])->group(function () {
     Route::post('/shipping/update/{id}', [ShippingController::class, 'updateShippingInfo'])->name('shipping.update');
 
     Route::get('/payment/process/{id}', [PaymentController::class, 'processPayment'])->name('payment.process');
+    Route::get('payment/verify', [PaymentController::class, 'verifyPayment'])->name('payment.verify');
 
     Route::get('/wishlist', [WishlistController::class, 'index']);
     Route::post('/wishlists/add', [WishlistController::class, 'addToWishlist']);
     Route::post('/wishlists/update', [WishlistController::class, 'updateWishlist']);
     Route::delete('/wishlists/delete/{id}', [WishlistController::class, 'destroy'])->name('delete')->middleware('auth');
+
+    Route::get('/rajaongkir/destination', [ShippingController::class, 'getDestination'])->name('rajaongkir.destination');
+    Route::get('/rajaongkir/cost', [ShippingController::class, 'calculateShippingCost'])->name('rajaongkir.cost');
 });
 
 
 Route::middleware(['auth', 'authorization:admin'])->prefix('/admin')->group(function () {
     Route::get('/', function () {
-        return redirect('/admin/products/page/1');
+        return redirect('/admin/dashboard');
     });
     Route::controller(ItemController::class)->prefix('/products')->group(function () {
-        Route::get('/page/{page}', 'index')->name('products');
+        Route::get('/', 'index')->name('products');
         Route::get('/show/{id}', 'show');
         Route::get('/create', 'create');
         Route::get('/edit/{id}', 'edit');
@@ -116,15 +148,27 @@ Route::middleware(['auth', 'authorization:admin'])->prefix('/admin')->group(func
         // Route::get('/delete/{id}', 'delete');
     });
     Route::controller(OrderController::class)->prefix('/orders')->group(function () {
-        Route::get('/', 'index');
-        Route::get('/changeStatus/{id}/{status}', 'changeStatus');
+        Route::get('/', 'index')->name('admin.orders.index');
+        Route::get('/{id}', 'adminShow')->name('admin.orders.show');
+        Route::get('/changeStatus/{id}/{status}', 'changeStatus')->name('admin.orders.changeStatus');
     });
     Route::get('/dashboard', function () {
+        $mostSoldItems = Item::with(['sold', 'rating'])
+            ->whereHas('sold', function ($query) {
+                $query->where('total_sold', '>', 0);
+                $query->orderBy('total_sold', 'desc');
+            })
+            ->take(5)
+            ->get();
         return view(
             'admin.dashboard.index',
             [
+                'items' => $mostSoldItems,
                 'countPendingOrders' => OrderController::pendingOrders(),
             ]
         );
     });
 });
+
+
+Route::post('/payment/notification', [PaymentController::class, 'handleNotification'])->name('payment.notification');

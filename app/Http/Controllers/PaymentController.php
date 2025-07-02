@@ -6,6 +6,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use \Midtrans\Snap;
+use \Midtrans\Notification;
 use \Midtrans\Config;
 use App\Models\Payment;
 
@@ -27,11 +28,20 @@ class PaymentController extends Controller
     public function processPayment($id)
     {
         $grossAmount = 0;
-        $order = Order::findOrFail($id);
+        $order = Order::findOrFail($id)->load(['items', 'user', 'shipping']);
+        // Check if the order exists
+        if (!$order) {
+            return redirect()->back()->withErrors(['error' => 'Order not found.']);
+        }
         // Calculate the total amount for the order
         foreach ($order->items as $item) {
             $grossAmount += $item->price * $item->pivot->quantity;
         }
+        // Check if the order is already paid
+        if ($order->payment && $order->payment->status === 'paid') {
+            return redirect()->back()->withErrors(['error' => 'This order has already been paid.']);
+        }
+        $grossAmount += $order->shipping->shipping_cost; // Add shipping cost to the total amount
         // Ensure the order belongs to the authenticated user
         if ($order->user_id !== Auth::id()) {
             return redirect()->back()->withErrors(['error' => 'Unauthorized access to this order.']);
@@ -75,9 +85,89 @@ class PaymentController extends Controller
         return redirect()->route('orders.show', $id)->with('snap_token', $snapToken);
     }
 
-    public function success()
+    public function verifyPayment(Request $request)
     {
-        // Display a success message after payment
-        return view('user.payment.success');
+        $order = Order::findOrFail($request->order_id);
+        // Check if the order belongs to the authenticated user
+        if ($order->user_id !== Auth::id()) {
+            return redirect()->back()->withErrors(['error' => 'Unauthorized access to this order.']);
+        }
+        // Verify the payment status
+        $payment = Payment::where('order_id', $order->id)->first();
+        if (!$payment) {
+            return redirect()->back()->withErrors(['error' => 'Payment not found for this order.']);
+        }
+        // Update payment status based on Midtrans response
+        if ($request->status === 'success') {
+            $payment->status = 'paid';
+            $payment->transaction_id = $request->transaction_id;
+            $payment->paid_at = now();
+            $payment->save();
+            return redirect()->route('orders.show', $order->id)->with('success', 'Payment successful!');
+        } else {
+            $payment->status = 'failed';
+            $payment->save();
+            return redirect()->route('orders.show', $order->id)->withErrors(['error' => 'Payment failed.']);
+        }
+    }
+    /**
+     * Handle the notification from Midtrans.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function handleNotification(Request $request)
+    {
+        $notification = new Notification();
+        $orderId = $notification->order_id;
+        $order = Order::where('id', $orderId)->first();
+        if (!$order) {
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+
+        $payment = Payment::where('order_id', $orderId)->first();
+        if (!$payment) {
+            return response()->json(['error' => 'Payment not found for this order'], 404);
+        }
+        // Update payment status based on Midtrans notification
+        switch ($notification->transaction_status) {
+            case 'capture':
+                if ($notification->payment_type === 'credit_card' && $notification->fraud_status === 'challenge') {
+                    // Handle challenge payment
+                    $payment->status = 'pending';
+                } else {
+                    // Handle successful payment
+                    $payment->status = 'paid';
+                    $payment->transaction_id = $notification->transaction_id;
+                    $payment->paid_at = now();
+                }
+                break;
+            case 'settlement':
+                // Handle settlement payment
+                $payment->status = 'paid';
+                $payment->transaction_id = $notification->transaction_id;
+                $payment->paid_at = now();
+                break;
+            case 'pending':
+                // Handle pending payment
+                $payment->status = 'pending';
+                break;
+            case 'deny':
+                // Handle denied payment
+                $payment->status = 'failed';
+                break;
+            case 'expire':
+                // Handle expired payment
+                $payment->status = 'expired';
+                break;
+            case 'cancel':
+                // Handle canceled payment
+                $payment->status = 'canceled';
+                break;
+            default:
+                return response()->json(['error' => 'Unknown transaction status'], 400);
+        }
+        $payment->save();
+        return response()->json(['success' => 'Payment status updated successfully'], 200);
     }
 }
