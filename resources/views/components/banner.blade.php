@@ -5,8 +5,11 @@
         @endphp
         @foreach ($banners as $banner)
             <div class="m-auto swiper-slide placeholder" aria-hidden="false">
-                <img src="{{ asset($banner['image_url']) }}" class="img-fluid img-ads h-100" alt="..."
-                    loading="preload">
+                <a href="{{ $banner['redirectUrl'] }}" class="text-decoration-none">
+                    <div class="placeholder-glow">
+                        <img src="{{ asset($banner['imageUrl']) }}" class="img-fluid img-ads h-100" alt="..."
+                            loading="preload">
+                    </div>
             </div>
         @endforeach
     </div>

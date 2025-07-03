@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
             'email_verified_at' => now(),
         ]);
-        \App\Models\User::factory(75)->create();
-        $this->call([ItemSeeder::class, BannerSeeder::class, OrderSeeder::class]);
+        \App\Models\User::factory(15)->create();
+        // $this->call([ItemSeeder::class, BannerSeeder::class, OrderSeeder::class]);
     }
 }

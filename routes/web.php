@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\OfferController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ShippingController;
@@ -10,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use App\Models\Banner;
 use App\Models\Item;
+use App\Models\Offer;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -49,12 +52,17 @@ Route::get('/', function () {
     $categories = $categories->map(function ($category) {
         return (object) $category;
     });
+    $offers = Offer::active()
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
     return view('home', [
         'route' => Request::route()->getName(),
         'title' => 'NIKKY',
         'items' => $items,
         'banners' => Banner::all(),
         'categories' => $categories,
+        'offers' => $offers,
     ]);
 })->name('home');
 
@@ -128,6 +136,22 @@ Route::middleware(['auth', 'authorization:customer'])->group(function () {
 Route::middleware(['auth', 'authorization:admin'])->prefix('/admin')->group(function () {
     Route::get('/', function () {
         return redirect('/admin/dashboard');
+    });
+    Route::controller(BannerController::class)->prefix('/banners')->group(function () {
+        Route::get('/', 'index')->name('admin.banners.index');
+        Route::get('/create', 'create')->name('admin.banners.create');
+        Route::post('/store', 'store')->name('admin.banners.store');
+        Route::get('/edit/{id}', 'edit')->name('admin.banners.edit');
+        Route::post('/update/{id}', 'update')->name('admin.banners.update');
+        Route::get('/delete/{id}', 'destroy')->name('admin.banners.delete');
+    });
+    Route::controller(OfferController::class)->prefix('/offers')->group(function () {
+        Route::get('/', 'index')->name('admin.offers.index');
+        Route::get('/create', 'create')->name('admin.offers.create');
+        Route::post('/store', 'store')->name('admin.offers.store');
+        Route::get('/edit/{id}', 'edit')->name('admin.offers.edit');
+        Route::post('/update/{id}', 'update')->name('admin.offers.update');
+        Route::get('/delete/{id}', 'destroy')->name('admin.offers.delete');
     });
     Route::controller(ItemController::class)->prefix('/products')->group(function () {
         Route::get('/', 'index')->name('products');

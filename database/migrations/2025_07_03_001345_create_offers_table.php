@@ -15,8 +15,14 @@ return new class extends Migration
     {
         Schema::create('offers', function (Blueprint $table) {
             $table->id();
-            $table->string('photo_url');
-            $table->string('redirect_url');
+            $table->string('title');
+            $table->text('description');
+            $table->decimal('discount_percentage', 5, 2);
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->string('image');
+            $table->string('link')->nullable(); // URL to the offer details or redemption
+            $table->string('status')->default('active'); // active, inactive, expired
             $table->timestamps();
         });
     }

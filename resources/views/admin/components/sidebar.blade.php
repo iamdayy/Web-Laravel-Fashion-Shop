@@ -21,6 +21,18 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a id="banners" class="nav-link text-light" href="/admin/banners">
+                    <span id="banners_icon" data-feather="image" class="align-text-bottom text-light"></span>
+                    Banners
+                </a>
+            </li>
+            <li class="nav-item">
+                <a id="offers" class="nav-link text-light" href="/admin/offers">
+                    <span id="offers_icon" data-feather="tag" class="align-text-bottom text-light"></span>
+                    Offers
+                </a>
+            </li>
+            <li class="nav-item">
                 <a id="orders" class="nav-link text-light" href="/admin/orders">
                     <span id="orders_icon" data-feather="file" class="align-text-bottom text-light"></span>
                     Orders

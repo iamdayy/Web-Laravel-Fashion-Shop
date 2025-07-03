@@ -11,5 +11,5 @@ class Banner extends Model
 
     protected $table = 'banners';
 
-    protected $fillable = ['imageUrl'];
+    protected $fillable = ['imageUrl', 'redirectUrl'];
 }
