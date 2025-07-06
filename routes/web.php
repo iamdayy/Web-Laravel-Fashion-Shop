@@ -176,6 +176,10 @@ Route::middleware(['auth', 'authorization:admin'])->prefix('/admin')->group(func
         Route::get('/{id}', 'adminShow')->name('admin.orders.show');
         Route::get('/changeStatus/{id}/{status}', 'changeStatus')->name('admin.orders.changeStatus');
     });
+    Route::controller(ShippingController::class)->prefix('/shipping')->group(function () {
+        Route::post('/tracking/add/{id}', 'setShipped')->name('admin.shipping.addTracking');
+        Route::get(('/tracking/set-delivered/{id}'), 'setDelivered')->name('admin.shipping.setDelivered');
+    });
     Route::get('/dashboard', function () {
         $mostSoldItems = Item::with(['sold', 'rating'])
             ->whereHas('sold', function ($query) {
@@ -194,5 +198,6 @@ Route::middleware(['auth', 'authorization:admin'])->prefix('/admin')->group(func
     });
 });
 
+Route::get('/tracking/{id}', [ShippingController::class, 'trackShipping'])->name('shipping.showTracking')->middleware('auth');
 
 Route::post('/payment/notification', [PaymentController::class, 'handleNotification'])->name('payment.notification');

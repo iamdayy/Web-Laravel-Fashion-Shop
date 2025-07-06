@@ -50,7 +50,7 @@ class BannerController extends Controller
         // Handle the image upload
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('banners', 'public');
-            $filename = '/storage/' . $imagePath; // Store the path to the image
+            $filename = '/storage/images/' . $imagePath; // Store the path to the image
         } else {
             return redirect()->back()->withErrors(['image' => 'Image is required.']);
         }
@@ -109,7 +109,7 @@ class BannerController extends Controller
         // Handle the image upload if a new image is provided
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('banners', 'public');
-            $banner->imageUrl = '/storage/' . $imagePath; // Update the image path
+            $banner->imageUrl = '/storage/images/' . $imagePath; // Update the image path
         }
 
         // Update the redirect URL

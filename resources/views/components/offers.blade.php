@@ -1,6 +1,6 @@
-<div class="row">
+<div class=" row">
     @foreach ($offers as $offer)
-        <div class="col-md-6">
+        <div class="my-2 col-md-6 col-lg-4">
             <div class="product-offer mb-30" style="height: 300px;">
                 <img class="img-fluid" src="{{ asset($offer->image) }}" alt="">
                 <div class="offer-text">

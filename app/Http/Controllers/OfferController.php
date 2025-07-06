@@ -50,7 +50,7 @@ class OfferController extends Controller
 
         $offer = new Offer($request->all());
         if ($request->hasFile('image')) {
-            $offer->image = '/storage/' . $request->file('image')->store('offers', 'public');
+            $offer->image = '/storage/images/' . $request->file('image')->store('offers', 'public');
         }
         $offer->save();
 
@@ -92,7 +92,7 @@ class OfferController extends Controller
         $offer = Offer::findOrFail($id);
         $offer->fill($request->all());
         if ($request->hasFile('image')) {
-            $offer->image = '/storage/' .  $request->file('image')->store('offers', 'public');
+            $offer->image = '/storage/images/' .  $request->file('image')->store('offers', 'public');
         }
         $offer->save();
 

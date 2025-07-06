@@ -69,6 +69,9 @@ class PaymentController extends Controller
             //     'unit' => 'minute',
             //     'duration' => 1,
             // ],
+            'callbacks' => [
+                'finish' => route('orders.show', ['id', $id]), // URL to redirect after payment
+            ]
         ];
         $snapToken = Snap::getSnapToken($params);
         // save payment details to the database

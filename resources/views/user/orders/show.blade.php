@@ -52,6 +52,24 @@
                     <p class="card-text">Phone: {{ $order->shipping->phone }}</p>
                 </div>
             </div>
+            @if ($order->shipping->status == 'shipped' && $order->shipping->tracking_number)
+                <div class="alert alert-info" role="alert">
+                    Paket telah dikirim. Nomor Pelacakan: {{ $order->shipping->tracking_number }}
+                    <a href="{{ route('shipping.showTracking', $order->id) }}" class="btn btn-primary">Lacak Pengiriman</a>
+                </div>
+            @elseif ($order->shipping->status == 'delivered')
+                <div class="alert alert-success" role="alert">
+                    Paket telah diterima.
+                </div>
+            @elseif ($order->shipping->status == 'pending')
+                <div class="alert alert-warning" role="alert">
+                    Paket masih dalam proses pengemasan.
+                </div>
+            @else
+                <div class="alert alert-info" role="alert">
+                    Status pengiriman: {{ $order->shipping->status }}
+                </div>
+            @endif
         @else
             <a href="{{ route('shipping.create', $order->id) }}" class="mb-4 btn btn-primary">Add Shipping Address</a>
         @endif
@@ -66,11 +84,17 @@
                     <p class="card-text">Status: {{ $order->payment->status }}</p>
                     <p class="card-text">Transaction ID: {{ $order->payment->transaction_id }}</p>
                     <p class="card-text">Paid At:
-                        {{ $order->payment->paid_at ? $order->payment->paid_at->format('d M Y H:i') : 'Not Paid' }}</p>
+                        {{ $order->payment->paid_at ? $order->payment->paid_at : 'Not Paid' }}</p>
                 </div>
-                <button class="btn btn-primary" id="pay-button">
-                    Pay Now
-                </button>
+                @if ($order->payment->status == 'pending' || $order->payment->status == 'unpaid')
+                    <button class="btn btn-primary" id="pay-button">
+                        Pay Now
+                    </button>
+                @else
+                    <div class="alert alert-info" role="alert">
+                        Pesanan Sudah Dibayar. Tidak ada tindakan yang diperlukan.
+                    </div>
+                @endif
             </div>
         @elseif (empty($order->shipping))
             <div class="alert alert-warning" role="alert">

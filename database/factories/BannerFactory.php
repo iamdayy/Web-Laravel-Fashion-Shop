@@ -20,8 +20,8 @@ class BannerFactory extends Factory
     {
         $imageFaker = new ImageFaker(new Picsum());
         return [
-            'image_url' => '/storage/images/banners/' . $imageFaker->image(storage_path('app/public/images/banners'), 640, 480, false, true, true),
-            'redirect_url' => $this->faker->url(),
+            'imageUrl' => '/storage/images/banners/' . $imageFaker->image(storage_path('app/public/images/banners'), 640, 480, false, true, true),
+            'redirectUrl' => $this->faker->url(),
         ];
     }
 }

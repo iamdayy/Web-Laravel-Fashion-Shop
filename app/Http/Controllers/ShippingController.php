@@ -153,4 +153,88 @@ class ShippingController extends Controller
             return response()->json(['error' => 'No shipping options found'], 404);
         }
     }
+    /**
+     * Set the shipping status to shipped.
+     * @param int $id
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function setShipped($id, Request $request)
+    {
+        $request->validate([
+            'tracking_number' => 'string|max:255', // Optional tracking number
+        ]);
+        $shipping = Shipping::where('order_id', $id)->firstOrFail();
+        $shipping->status = 'shipped';
+        $shipping->shipped_at = now();
+        $shipping->tracking_number = $request->input('tracking_number'); // Optional
+        $shipping->save();
+        return redirect()->route('orders.show', ['id' => $id]);
+    }
+    /**
+     * Set the shipping status to delivered.
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function setDelivered($id)
+    {
+        $shipping = Shipping::where('order_id', $id)->firstOrFail();
+        $shipping->status = 'delivered';
+        $shipping->delivered_at = now();
+        $shipping->save();
+        return redirect()->route('orders.show', ['id' => $id]);
+    }
+    /**
+     * track the shipping status.
+     * @param int $id
+     * @return
+     */
+    public function trackShipping($id)
+    {
+        $order = Order::findOrFail($id);
+
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Please log in to track your order.');
+        }
+
+        // Check if the order belongs to the authenticated user
+        if ($order->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Unauthorized access to this order.');
+        }
+
+        $shipping = Shipping::where('order_id', $id)->firstOrFail();
+
+        if (!$shipping->tracking_number) {
+            return view('shipping.show', [
+                'order' => $order->load('shipping'),
+                'tracking_info' => [],
+                'title' => 'Track Shipping',
+            ])->with('error', 'Tracking number not available for this order.');
+        }
+
+        $url = 'https://rajaongkir.komerce.id/api/v1/track/waybill';
+        $response = Http::withHeaders([
+            'key' => config('rajaongkir_api.key'),
+            'Content-Type' => 'application/json',
+        ])->asForm()->post($url, [
+            'courier' => $shipping->courier,
+            'awb' => $shipping->tracking_number,
+        ]);
+
+        if (!$response->successful()) {
+            return view('shipping.show', [
+                'order' => $order->load('shipping'),
+                'tracking_info' => [],
+                'title' => 'Track Shipping',
+            ])->with('error', 'Failed to fetch tracking information. Please try again later.');
+        }
+
+        $data = $response->json();
+        return view('shipping.show', [
+            'order' => $order->load('shipping'),
+            'tracking_info' => $data['data'] ?? [],
+            'title' => 'Track Shipping',
+        ]);
+    }
 }

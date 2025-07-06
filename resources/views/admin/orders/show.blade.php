@@ -66,40 +66,6 @@
                                     <p><strong>Phone:</strong> {{ $order->shipping->phone }}</p>
                                     <p><strong>Shipping Cost:</strong> Rp. {{ number_format($order->shipping->cost, 2) }}
                                     </p>
-
-                                    <!-- Modal trigger button -->
-                                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal"
-                                        data-bs-target="#setTrackingModal">
-                                        Set Tracking Number
-                                    </button>
-
-                                    <!-- Modal Body -->
-                                    <!-- if you want to close by clicking outside the modal, delete the last endpoint:data-bs-backdrop and data-bs-keyboard -->
-                                    <div class="modal fade" id="setTrackingModal" tabindex="-1" data-bs-backdrop="static"
-                                        data-bs-keyboard="false" role="dialog" aria-labelledby="modalTitleId"
-                                        aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
-                                            role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="modalTitleId">
-                                                        Set Tracking Number
-                                                    </h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">Body</div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">
-                                                        Close
-                                                    </button>
-                                                    <button type="button" class="btn btn-primary">Save</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                 </div>
                             </div>
                         @else
@@ -122,26 +88,57 @@
                             </div>
                         @endif
                         <div class="d-flex justify-content-between">
+                            <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary">Back to Orders</a>
                             <h4>Total Price: Rp. {{ number_format($totalPrice, 2) }}</h4>
-                            @if ($order->status == 'pending')
-                                <div class="gap-2 btn-group" role="group">
-                                    <form
-                                        action="{{ route('admin.orders.changeStatus', ['id' => $order->id, 'status' => 'success']) }}"
-                                        method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success">Mark as Success</button>
-                                    </form>
-                                    <form
-                                        action="{{ route('admin.orders.changeStatus', ['id' => $order->id, 'status' => 'failed']) }}"
-                                        method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-danger">Mark as Failed</button>
-                                    </form>
+                        </div>
+                        <div class="mt-4">
+                            @if ($order->status == 'pending' && $order->payment->status == 'paid' && $order->shipping->status == 'pending')
+                                <!-- Modal trigger button -->
+                                <button type="button" class="w-100 btn btn-primary btn-lg" data-bs-toggle="modal"
+                                    data-bs-target="#tambahResiModal">
+                                    Tambah Nomor Resi
+                                </button>
+
+                                <div class="modal fade" id="tambahResiModal" tabindex="-1" data-bs-backdrop="static"
+                                    data-bs-keyboard="false" role="dialog" aria-labelledby="tambahResiModalTitle"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+                                        role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="tambahResiModalTitle">
+                                                    Tambah Nomor Resi
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="{{ route('admin.shipping.addTracking', $order->id) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    <div class="mb-3">
+                                                        <label for="tracking_number" class="form-label">Nomor Resi</label>
+                                                        <input type="text" class="form-control" id="tracking_number"
+                                                            name="tracking_number" required>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">Simpan</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @elseif ($order->status == 'pending' && $order->payment->status == 'paid' && $order->shipping->status == 'delivered')
+                                <div class="w-100 alert alert-success" role="alert">
+                                    Pesanan telah diterima.
+                                </div>
+                            @elseif ($order->status == 'pending' && $order->payment->status == 'paid' && $order->shipping->status == 'shipped')
+                                <a href="{{ route('admin.shipping.setDelivered', $order->id) }}"
+                                    class="w-100 btn btn-success">Tandai Telah dikirim</a>
+                            @else
+                                <div class="w-100 alert alert-info" role="alert">
+                                    Shipping status: {{ ucfirst($order->shipping->status) }}
                                 </div>
                             @endif
-                        </div>
-                        <div class="mt-4 d-flex justify-content-between">
-                            <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary">Back to Orders</a>
                         </div>
                     </div>
                 </main>
