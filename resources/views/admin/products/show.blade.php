@@ -2,7 +2,6 @@
 @section('content_admin')
 
     <body>
-
         <div class="my-3 container-fluid">
             <div class="row">
                 @include('admin.components.sidebar')

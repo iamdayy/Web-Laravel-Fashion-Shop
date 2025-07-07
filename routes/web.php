@@ -13,6 +13,7 @@ use App\Http\Controllers\WishlistController;
 use App\Models\Banner;
 use App\Models\Item;
 use App\Models\Offer;
+use GrahamCampbell\ResultType\Result;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,7 +36,7 @@ Route::get('/', function () {
     $items = Item::with('rating')
         ->orderBy('created_at', 'desc')
         ->take(8)
-        ->get();
+        ->paginate();
     $categories = Item::select('category')
         ->distinct()
         ->get()
@@ -70,13 +71,55 @@ Route::get('/products', function () {
     // Mengambil semua item dari database
     // dan mengembalikannya ke view 'products'
     // Jika tidak ada item, redirect ke halaman utama
-    $items = Item::with('rating')->get();
+    $items = Item::with('rating')->paginate(10);
     if ($items->isEmpty()) {
         return redirect('/');
     }
     return view('products', [
         'items' => $items,
         'param' => ''
+    ]);
+});
+Route::get('/products/new-arrivals', function () {
+    $items = Item::with('rating')
+        ->orderBy('created_at', 'desc')
+        ->take(8)
+        ->paginate();
+    return view('products', [
+        'items' => $items,
+        'param' => 'New Arrivals'
+    ]);
+})->name('new-arrivals');
+Route::get('/products/most-sold', function () {
+    $items = Item::with('rating')
+        ->select('items.*')
+        ->join('items_orders', 'items.id', '=', 'items_orders.item_id')
+        ->selectRaw('SUM(items_orders.quantity) as total_sold')
+        ->groupBy('items.id')
+        ->having('total_sold', '>', 0)
+        ->orderBy('total_sold', 'desc')
+        ->take(8)
+        ->paginate();
+    return view('products', [
+        'items' => $items,
+        'param' => 'Most Sold'
+    ]);
+})->name('most-sold');
+Route::get('/products/search', function (Request $request) {
+    $search = Request::get('search');
+    // if (!$search) {
+    //     return redirect('/products');
+    // }
+    $items = Item::with('rating')
+        ->where(function ($query) use ($search) {
+            $query->where('name', 'like', '%' . $search . '%')
+                ->orWhere('description', 'like', '%' . $search . '%')
+                ->orWhere('category', 'like', '%' . $search . '%');
+        })
+        ->paginate();
+    return view('products', [
+        'items' => $items,
+        'param' => $search,
     ]);
 });
 Route::get('/products/{params}', function (string $params) {
@@ -86,7 +129,7 @@ Route::get('/products/{params}', function (string $params) {
                 ->orWhere('description', 'like', '%' . $params . '%')
                 ->orWhere('category', 'like', '%' . $params . '%');
         })
-        ->get();
+        ->paginate();
     return view('products', [
         'items' => $items,
         'param' => $params,
@@ -181,11 +224,13 @@ Route::middleware(['auth', 'authorization:admin'])->prefix('/admin')->group(func
         Route::get(('/tracking/set-delivered/{id}'), 'setDelivered')->name('admin.shipping.setDelivered');
     });
     Route::get('/dashboard', function () {
-        $mostSoldItems = Item::with(['sold', 'rating'])
-            ->whereHas('sold', function ($query) {
-                $query->where('total_sold', '>', 0);
-                $query->orderBy('total_sold', 'desc');
-            })
+        $mostSoldItems = Item::with('rating')
+            ->select('items.*')
+            ->join('items_orders', 'items.id', '=', 'items_orders.item_id')
+            ->selectRaw('SUM(items_orders.quantity) as total_sold')
+            ->groupBy('items.id')
+            ->having('total_sold', '>', 0)
+            ->orderBy('total_sold', 'desc')
             ->take(5)
             ->get();
         return view(

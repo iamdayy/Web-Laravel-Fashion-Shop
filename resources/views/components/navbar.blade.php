@@ -24,7 +24,7 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/products">All Products</a></li>
                             <li><a class="dropdown-item" href="/products/new-arrivals">New Arrivals</a></li>
-                            <li><a class="dropdown-item" href="/products/sale">Sale</a></li>
+                            <li><a class="dropdown-item" href="/products/most-sold">Most Sold</a></li>
                         </ul>
                     </div>
                 </li>
@@ -46,9 +46,9 @@
                     </div>
                 </li>
             </ul>
-            <form class="d-inline w-100 ms-3 me-3" role="/search">
+            <form class="d-inline w-100 ms-3 me-3" action="/products/search" method="GET">
                 <input class="form-control w-100 rounded-0" type="search" placeholder="Search something..."
-                    aria-label="Search">
+                    aria-label="Search" name="search" id="search" value="{{ request('search') }}">
             </form>
             <ul class="my-2 navbar-nav my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 300px;">
                 @if (!Auth::user())

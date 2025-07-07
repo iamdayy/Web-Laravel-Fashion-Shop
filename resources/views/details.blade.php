@@ -34,13 +34,12 @@
                                 <i class="bi bi-star-fill"></i>
                             @endif
                         </div>
-                        <small class="pt-1 ms-1">({{ count($item->reviews) }}) Reviews</small>
+                        <small class="pt-1 ms-1">({{ count($item->reviews) }}) Rating</small>
                     </div>
                     <h3 class="mb-4 font-weight-semi-bold">Rp{{ number_format($item->price, 2, ',', '.') }}</h3>
-                    <p class="mb-4">{{ $item->description }}</p>
-                    <div class="mb-4 d-flex align-items-center">
-                        <strong class="mr-2 text-dark">Category:</strong>
-                        <span class="text-secondary">{{ $item->category }}</span>
+                    <div class="gap-2 mb-4 d-flex align-items-center">
+                        <strong class="mr-2 text-dark">Category: </strong>
+                        <span class="text-secondary"> {{ $item->category }}</span>
                     </div>
                     @if (Auth::check())
                         <div class="container-fluid">
@@ -83,25 +82,6 @@
                             </div>
                         </div>
                     @endif
-
-
-                    <div class="pt-2 d-flex">
-                        <strong class="mr-2 text-dark">Share on:</strong>
-                        <div class="d-inline-flex">
-                            <a class="px-2 text-dark" href="">
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <a class="px-2 text-dark" href="">
-                                <i class="fab fa-twitter"></i>
-                            </a>
-                            <a class="px-2 text-dark" href="">
-                                <i class="fab fa-linkedin-in"></i>
-                            </a>
-                            <a class="px-2 text-dark" href="">
-                                <i class="fab fa-pinterest"></i>
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -113,9 +93,9 @@
                             <button class="nav-link text-dark active" id="nav-home-tab" data-bs-toggle="tab"
                                 data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home"
                                 aria-selected="true">Description</button>
-                            <button class="nav-link text-dark" id="nav-contact-tab" data-bs-toggle="tab"
+                            {{-- <button class="nav-link text-dark" id="nav-contact-tab" data-bs-toggle="tab"
                                 data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact"
-                                aria-selected="false">Reviews</button>
+                                aria-selected="false">Reviews</button> --}}
                         </div>
                     </nav>
                     <div class="tab-content" id="nav-tabContent">
@@ -124,7 +104,7 @@
                             <h4 class="mb-3">Product Description</h4>
                             <p>{{ $item->description }}</p>
                         </div>
-                        <div class="tab-pane fade py-xl-4 px-xl-2" id="nav-contact" role="tabpanel"
+                        {{-- <div class="tab-pane fade py-xl-4 px-xl-2" id="nav-contact" role="tabpanel"
                             aria-labelledby="nav-contact-tab" tabindex="0">
                             <div class="row">
                                 <div class="col-md-6">
@@ -184,7 +164,7 @@
                                     </form>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
