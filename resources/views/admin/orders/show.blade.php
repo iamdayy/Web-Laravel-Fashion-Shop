@@ -128,9 +128,8 @@
                                     </div>
                                 </div>
                             @elseif ($order->status == 'pending' && $order->payment->status == 'paid' && $order->shipping->status == 'delivered')
-                                <div class="w-100 alert alert-success" role="alert">
-                                    Pesanan telah diterima.
-                                </div>
+                                <a href="{{ route('admin.orders.changeStatus', ['id' => $order->id, 'status' => 'selesai']) }}"
+                                    class="w-100 btn btn-success">Tanda telah selesai</a>
                             @elseif ($order->status == 'pending' && $order->payment->status == 'paid' && $order->shipping->status == 'shipped')
                                 <a href="{{ route('admin.shipping.setDelivered', $order->id) }}"
                                     class="w-100 btn btn-success">Tandai Telah dikirim</a>
