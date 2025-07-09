@@ -131,7 +131,7 @@ class ShippingController extends Controller
         $request->validate([
             'destination' => 'required|integer',
             'weight' => 'required|integer|min:1', // Weight must be a positive integer
-            'courier' => 'required|string|in:jne,pos,tiki', // Valid couriers
+            'courier' => 'required|string|in:jne,pos,tiki,jnt,sicepat,tiki,anteraja', // Valid couriers
         ]);
         $url = 'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost';
         $response = Http::withHeaders([

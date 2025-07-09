@@ -170,10 +170,9 @@ Route::middleware(['auth', 'authorization:customer'])->group(function () {
     Route::post('/wishlists/add', [WishlistController::class, 'addToWishlist']);
     Route::post('/wishlists/update', [WishlistController::class, 'updateWishlist']);
     Route::delete('/wishlists/delete/{id}', [WishlistController::class, 'destroy'])->name('delete')->middleware('auth');
-
-    Route::get('/rajaongkir/destination', [ShippingController::class, 'getDestination'])->name('rajaongkir.destination');
-    Route::get('/rajaongkir/cost', [ShippingController::class, 'calculateShippingCost'])->name('rajaongkir.cost');
 });
+Route::get('/rajaongkir/destination', [ShippingController::class, 'getDestination'])->name('rajaongkir.destination');
+Route::get('/rajaongkir/cost', [ShippingController::class, 'calculateShippingCost'])->name('rajaongkir.cost');
 
 
 Route::middleware(['auth', 'authorization:admin'])->prefix('/admin')->group(function () {
