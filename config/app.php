@@ -17,6 +17,14 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    /*|--------------------------------------------------------------------------
+    | Application Creator
+    |--------------------------------------------------------------------------
+    || This value is the creator of your application. It can be used for
+    | branding purposes or in notifications.
+    |*/
+    'creator' => env('APP_CREATOR', 'Your Name'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
